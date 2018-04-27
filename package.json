@@ -1,0 +1,22 @@
+{
+  "name": "assignment_exchange_rates",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "ajv": "^6.4.0",
+    "chart.js": "^2.7.2",
+    "google-trends-api": "^4.6.1",
+    "jquery": "^3.3.1",
+    "mdbreact": "git+https://github.com/mdbootstrap/React-Bootstrap-with-Material-Design.git",
+    "react": "^16.3.2",
+    "react-chartjs-2": "^2.7.0",
+    "react-dom": "^16.3.2",
+    "react-scripts": "1.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
