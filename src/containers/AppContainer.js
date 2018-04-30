@@ -118,7 +118,7 @@ class AppContainer extends Component {
 
 	getPriceTrend = (coinName, timePeriod) => {
 		return new Promise((resolve, reject) => {
-			fetch(`https://www.cryptorollcall.com/crcserver/charts/histo/${ timePeriod }/${ coinName }`)
+			fetch(`https://www.cryptorollcall.com/crcserver/charts/histo/${ timePeriod }/${ coinName }`, { mode: 'no-cors' })
 			.then(res => {
 				if(res.ok)
 					resolve(res.json())
