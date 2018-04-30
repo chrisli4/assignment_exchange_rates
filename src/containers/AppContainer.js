@@ -104,8 +104,8 @@ class AppContainer extends Component {
 			const trendAData = formatArr(res[0].price)
 			const trendBData = formatArr(res[1].price)
 
-			console.log(`trendA: ${ trendA }`)
-			console.log(`trendB: ${ trendB }`)
+			console.log(`trendA: ${ trendAData }`)
+			console.log(`trendB: ${ trendBData }`)
 
 			this.setState({
 				trendA: trendAData,
