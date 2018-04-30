@@ -122,10 +122,14 @@ class AppContainer extends Component {
 	}
 
 	getPriceTrend = (coinName, timePeriod) => {
+
+		const proxy = 'https://cors-anywhere.herokuapp.com/'
+
 		return new Promise((resolve, reject) => {
-			fetch(`https://www.cryptorollcall.com/crcserver/charts/histo/${ timePeriod }/${ coinName }`, { mode: 'no-cors' })
+			fetch(proxy + `https://www.cryptorollcall.com/crcserver/charts/histo/${ timePeriod }/${ coinName }`)
 			.then(res => {
-				if(res.ok)
+				console.log(res)
+				if(res)
 					resolve(res.json())
 				else
 					reject(res.statusText)
