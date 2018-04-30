@@ -99,8 +99,13 @@ class AppContainer extends Component {
 		Promise.all(promiseArray)
 		.then(res => {
 
+			console.log(`res: ${ res }`)
+
 			const trendAData = formatArr(res[0].price)
 			const trendBData = formatArr(res[1].price)
+
+			console.log(`trendA: ${ trendA }`)
+			console.log(`trendB: ${ trendB }`)
 
 			this.setState({
 				trendA: trendAData,
