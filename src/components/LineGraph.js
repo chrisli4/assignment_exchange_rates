@@ -3,7 +3,7 @@ import { Line } from 'react-chartjs-2';
 
 const LineGraph = (props) => {
 
-	const { data, startTime, endTime } = props;
+	const { coinA, coinB, trendA, trendB, startTime, endTime } = props;
 
 	const options = {
 		scales: {
@@ -23,25 +23,46 @@ const LineGraph = (props) => {
 	const dataObj = {
 		datasets: [
 			{
-				label: 'Interests',
+				label: coinA,
 				fill: false,
 				lineTension: 0.1,
-				backgroundColor: 'rgba(75,192,192,0.4)',
-				borderColor: 'rgba(75,192,192,1)',
+				backgroundColor: '#FF6384',
+				borderColor: '#FF6384',
 				borderCapStyle: 'butt',
 				borderDash: [],
 				borderDashOffset: 0.0,
 				borderJoinStyle: 'miter',
-				pointBorderColor: 'rgba(75,192,192,1)',
-				pointBackgroundColor: '#fff',
+				pointBorderColor: '#FF6384',
+				pointBackgroundColor: '#FF6384',
 				pointBorderWidth: 1,
 				pointHoverRadius: 5,
-				pointHoverBackgroundColor: 'rgba(75,192,192,1)',
-				pointHoverBorderColor: 'rgba(220,220,220,1)',
+				pointHoverBackgroundColor: '#FF6384',
+				pointHoverBorderColor: '#FF6384',
 				pointHoverBorderWidth: 2,
 				pointRadius: 1,
 				pointHitRadius: 10,
-				data: data
+				data: trendA
+			},
+			{
+				label: coinB,
+				fill: false,
+				lineTension: 0.1,
+				backgroundColor: '#36A2EB',
+				borderColor: '#36A2EB',
+				borderCapStyle: 'butt',
+				borderDash: [],
+				borderDashOffset: 0.0,
+				borderJoinStyle: 'miter',
+				pointBorderColor: '#36A2EB',
+				pointBackgroundColor: '#36A2EB',
+				pointBorderWidth: 1,
+				pointHoverRadius: 5,
+				pointHoverBackgroundColor: '#36A2EB',
+				pointHoverBorderColor: '#36A2EB',
+				pointHoverBorderWidth: 2,
+				pointRadius: 1,
+				pointHitRadius: 10,
+				data: trendB
 			}
 		]
 	};

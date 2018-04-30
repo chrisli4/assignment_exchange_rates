@@ -12,7 +12,7 @@ const CoinInput = (props) => {
 	return (
 		<div className={classNames}>
 			<InputGroup labelText='Amount' className='mr-2'>
-				<Input name={inputName} value={inputValue} onChange={onChange} type='number' {...restOfProps} />
+				<Input name={inputName} value={inputValue} onChange={onChange} type='number' className='text-center' {...restOfProps} />
 			</InputGroup>
 			<InputGroup labelText='Coin' className=''>
 				<Select data={selectData} name={selectName} value={selectValue} onChange={onChange}/>

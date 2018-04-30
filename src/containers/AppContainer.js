@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
+
 import App from '../components/App'
-import googleTrends from 'google-trends-api'
-import { toArray, toVal, formatData } from '../helpers/format'
+import { toArray, toVal, formatArr, genStartTime } from '../helpers/format'
 
 class AppContainer extends Component {
 
@@ -17,10 +17,13 @@ class AppContainer extends Component {
 			tAmount: [],
 			tBase: 'ETH',
 
-			startTime: new Date("2004-02-1").toISOString().split('T')[0],
-			endTime: new Date().toISOString().split('T')[0],
-			tCoin: 'BTC',
-			trend: [],
+			timePeriod: 'Week',
+			startTime: genStartTime('Week'),
+			endTime: new Date(),
+			coinA: 'BTC',
+			coinB: 'ETH',
+			trendA: [],
+			trendB: [],
 
 			isFetching: false,
 			error: null,
@@ -32,13 +35,16 @@ class AppContainer extends Component {
 			name: 'Currency',
 			rate: 'Rate'
 		}],
-		coins: ['ADA','BTC','ETH','EOS','LTC','OMG','VTC','XMR','XRB','XRP']
+		coinList: ['ADA','BCH','BTC','ETH','EOS','IOTA','NEO','LTC','OMG','VTC','XLM','XMR','NANO','XRP'],
+		timeList: ['Day', 'Week', 'Month', 'Year']
 	}
 
 	componentDidMount() {
-		this.getRates();
-		this.getRates(this.state.fBase, this.state.tBase);
-		this.getTrend(this.state.tCoin);
+		this.getRates(this.state.base, null, this.state.amount, null);
+		this.getRates(this.state.fBase, this.state.tBase, null, this.state.tAmount);
+		this.getAll([this.getPriceTrend(this.state.coinA, this.state.timePeriod.toUpperCase()), 
+			this.getPriceTrend(this.state.coinB, this.state.timePeriod.toUpperCase())]);
+		
 	}
 
 	handleRates = (e) => {
@@ -46,7 +52,7 @@ class AppContainer extends Component {
 		this.setState({
 			[e.target.name]: e.target.value
 		}, () => {
-			this.getRates(this.state.base)
+			this.getRates(this.state.base, null, this.state.amount, null);
 		})
 	}
 
@@ -55,7 +61,22 @@ class AppContainer extends Component {
 		this.setState({
 			[e.target.name]: e.target.value
 		}, () => {
-			this.getRates(this.state.fBase, this.state.tBase)
+			this.getRates(this.state.fBase, this.state.tBase, null, this.state.tAmount);
+		})
+	}
+
+	handlePeriod = (e) => {
+		e.preventDefault()
+
+		this.setState({
+			[e.target.name]: e.target.value,
+			startTime: genStartTime(e.target.value),
+			endTime: new Date()
+		}, () => {
+
+			this.getAll([this.getPriceTrend(this.state.coinA, this.state.timePeriod.toUpperCase()), 
+				this.getPriceTrend(this.state.coinB, this.state.timePeriod.toUpperCase())]);
+
 		})
 	}
 
@@ -64,86 +85,98 @@ class AppContainer extends Component {
 		this.setState({
 			[e.target.name]: e.target.value
 		}, () => {
-			this.getTrend(this.state.tCoin)
+
+			this.getAll([this.getPriceTrend(this.state.coinA, this.state.timePeriod.toUpperCase()), 
+				this.getPriceTrend(this.state.coinB, this.state.timePeriod.toUpperCase())]);
 		})
 	}
 
-	getTrend = (coinName) => {
-
-		const params = {
-			keyword: coinName
-		}
-
+	getAll = (promiseArray) => {
 		this.setState({
 			isFetching: true
 		})
 
-		googleTrends.interestOverTime(params)
-			.then(res => {
-				if(!res)
-					throw new Error(`${ res.status }:${ res.statusText }`)
-				return res
-			})
-			.then(obj => {
+		Promise.all(promiseArray)
+		.then(res => {
 
-				const trendData = JSON.parse(obj).default.timelineData
+			const trendAData = formatArr(res[0].price)
+			const trendBData = formatArr(res[1].price)
 
-				this.setState({
-					isFetching: false,
-					trend: formatData(trendData)
-				})
+			this.setState({
+				trendA: trendAData,
+				trendB: trendBData
 			})
-			.catch(e => {
-				this.setState({
-					isFetching: false,
-					error: e
-				})
+		})
+		.catch(e => {
+
+			this.setState({
+				isFetching: false,
+				error: e
 			})
+		})
 	}
 
-	getRates = (from = 'BTC', to) => {
+	getPriceTrend = (coinName, timePeriod) => {
+		return new Promise((resolve, reject) => {
+			fetch(`https://www.cryptorollcall.com/crcserver/charts/histo/${ timePeriod }/${ coinName }`)
+			.then(res => {
+				if(res.ok)
+					resolve(res.json())
+				else
+					reject(res.statusText)
+			})
+			.catch(e => {
+				console.log(e);
+				reject(e)
+			})
+		})
+	}
 
-		let convert = true;
+	getRates = (from, to, amount, fAmount) => {
 
 		if(!to) {
 			to = 'USD,JPY,EUR,AUD,CHF,NZD,CAD';
-			convert = false;
 		}
 
 		this.setState({isFetching: true})
 
 		fetch(`https://min-api.cryptocompare.com/data/price?fsym=${ from }&tsyms=${ to }`)
-			.then((res) => {
-
-				if(!res.ok) 
-					throw new Error(`${ res.status }:${ res.statusText }`)
+		.then((res) => {
+			if(res.ok) 
 				return res.json()
-			})
-			.then(json => {
-
-				if(convert)
-					this.setState({
-						isFetching: false,
-						tAmount: toVal(json, this.state.fAmount)
-					})
-				else 
-					this.setState({
-						isFetching: false,
-						rates: toArray(json, this.state.amount)
-					})
-			})
-			.catch(e => {
+			throw new Error(`${ res.status }:${ res.statusText }`)
+		})
+		.then(json => {
+			if(fAmount)
 				this.setState({
 					isFetching: false,
-					error: e
+					tAmount: toVal(json, fAmount)
 				})
+			else 
+				this.setState({
+					isFetching: false,
+					rates: toArray(json, amount)
+				})
+		})
+		.catch(e => {
+			this.setState({
+				isFetching: false,
+				error: e
 			})
+		})
 	}
 	
 	render() {
 		return (
-			<App handleRates={this.handleRates} handleConvert={this.handleConvert} handleGraph={this.handleGraph} {...this.constants} {...this.state}/>
-		)
+			<App 
+				handleRates={this.handleRates} 
+				handleConvert={this.handleConvert}
+				handlePeriod={this.handlePeriod} 
+				handleGraph={this.handleGraph} 
+				{...this.constants} 
+				{...this.state}
+				/>
+			)
 	}
 }
 

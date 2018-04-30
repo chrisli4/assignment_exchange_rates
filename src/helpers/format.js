@@ -1,9 +1,40 @@
+import moment from 'moment'
+
+
 const toNum = (string) => {
 	return parseFloat(string);
 }
 
 const multiply = (amount, value) => {
 	return (amount * value).toFixed(2);
+}
+
+const unixToDate = (unixTime) => {
+	return moment(unixTime).toDate();
+}
+
+const formatArr = (arr) => {
+
+	const formatted = arr.map(item => {
+		return {
+			x: unixToDate(item[0]),
+			y: item[1]
+		}
+	})
+
+	return formatted;
+}
+
+const genStartTime = (timePeriod) => {
+
+	const time = {
+		'Day': 'days',
+		'Week': 'weeks',
+		'Month': 'months',
+		'Year': 'years'
+	}
+
+	return moment().subtract(1, time[timePeriod]).toDate();
 }
 
 const toArray = (obj, amount) => {
@@ -30,15 +61,5 @@ const toVal = (obj, amount) => {
 	}
 };
 
-const formatData = (data) => {
-	return data.map((obj) => {
-		return {
-			x: new Date(obj.formattedAxisTime),
-			y: obj.value[0]
-		}
-	})
-}
-
-
-export { toArray, toVal, formatData }
+export { toArray, toVal, formatArr, genStartTime }
 

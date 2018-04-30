@@ -1,12 +1,12 @@
 import React from 'react'
 
-import { Section, InputGroup, Input, Table, Select } from '../elements/'
+import { Section, InputGroup, Table, Select } from '../elements/'
 import { CoinInput, LineGraph } from './'
 
 const App = (props) => {
 	
-	const { tableHeader, coins, amount, base, rates, handleRates, fAmount, fBase, tAmount, tBase, 
-			handleConvert, startTime, endTime, tCoin, handleGraph, trend } = props
+	const { tableHeader, coinList, amount, base, rates, handleRates, fAmount, fBase, tAmount, tBase, 
+	handleConvert, handlePeriod, timeList, timePeriod, startTime, endTime, coinA, coinB, handleGraph, trendA, trendB } = props
 
 	return (
 		<div className="App container">
@@ -21,35 +21,37 @@ const App = (props) => {
 			<div className='row'>
 				<Section title='Historical Trends'>
 					<div className='row'>
-						<InputGroup name='startTime' labelText='Start Date'>
-							<Input 
-								name='startTime'
-								type='date' 
-								value={startTime} 
-								onChange={handleGraph}  
-							/>
-						</InputGroup>
-						<InputGroup name='endTime' labelText='End Date'>
-							<Input 
-								name='endTime'
-								type='date' 
-								value={endTime} 
-								onChange={handleGraph} 
-							/>
-						</InputGroup>
-						<InputGroup name='tCoin' labelText='Coin'>
+						<InputGroup name='coinA' labelText='Coin A'>
 							<Select 
-								name='tCoin'
-								data={coins} 
-								value={tCoin} 
+								name='coinA'
+								data={coinList} 
+								value={coinA} 
 								onChange={handleGraph} 
+							/>
+						</InputGroup>
+						<InputGroup name='coinB' labelText='Coin B'>
+							<Select 
+								name='coinB'
+								data={coinList} 
+								value={coinB} 
+								onChange={handleGraph} 
+							/>
+						</InputGroup>
+						<InputGroup labelText='Time Period'>
+							<Select 
+								name='timePeriod'
+								data={timeList}  
+								value={timePeriod} 
+								onChange={handlePeriod}
 							/>
 						</InputGroup>
 					</div>
-
 					<div className='row'>
 						<LineGraph 
-							data={trend} 
+							coinA={coinA}
+							coinB={coinB}
+							trendA={trendA} 
+							trendB={trendB}
 							startTime={startTime} 
 							endTime={endTime} 
 						/>
@@ -67,7 +69,7 @@ const App = (props) => {
 						inputValue={amount}
 						selectName='base'
 						selectValue={base} 
-						selectData={coins} 
+						selectData={coinList} 
 						onChange={handleRates}
 					/>
 					<Table 
@@ -84,7 +86,7 @@ const App = (props) => {
 						inputValue={fAmount}
 						selectName='fBase'
 						selectValue={fBase} 
-						selectData={coins} 
+						selectData={coinList} 
 						onChange={handleConvert}
 					/>
 					<CoinInput
@@ -92,14 +94,14 @@ const App = (props) => {
 						inputValue={tAmount}
 						selectName='tBase'
 						selectValue={tBase} 
-						selectData={coins} 
+						selectData={coinList} 
 						onChange={handleConvert}
 						readOnly
 					/>
 				</Section>
-				
+
 			</div>
-		</div>
+			</div>
 		)
 }
 
