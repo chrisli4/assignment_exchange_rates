@@ -54,6 +54,7 @@ const App = (props) => {
 							trendB={trendB}
 							startTime={startTime} 
 							endTime={endTime} 
+							timePeriod={timePeriod}
 						/>
 					</div>
 				</Section>	

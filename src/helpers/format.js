@@ -40,7 +40,7 @@ const toDays = (timePeriod) => {
 }
 
 const toTimeUnit = (timePeriod) => {
-	return timePeriod === 'Days' ? 'histohour' : 'histoday';
+	return timePeriod === 'Day' ? 'histohour' : 'histoday';
 }
 
 

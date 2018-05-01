@@ -3,16 +3,22 @@ import { Line } from 'react-chartjs-2';
 
 const LineGraph = (props) => {
 
-	const { coinA, coinB, trendA, trendB, startTime, endTime } = props;
+	const { coinA, coinB, trendA, trendB, startTime, endTime, timePeriod } = props;
+
+
+	const displayObj = {
+		'Day': { hour: 'hA'},
+		'Week': { day: 'MMM D'},
+		'Month': { week: 'll'},
+		'Year': { month: 'MMM YYYY'}
+	}
 
 	const options = {
 		scales: {
 			xAxes: [{
 				type: 'time',
 				time: {
-					displayFormats: {
-						week: 'll'
-					},
+					displayFormats: displayObj[timePeriod],
 					min: startTime,
 					max: endTime,
 				}

@@ -40,6 +40,7 @@ class AppContainer extends Component {
 		timeList: ['Day', 'Week', 'Month', 'Year'],
 		proxy: 'https://tranquil-harbor-38042.herokuapp.com/'
 	}
+	
 
 	componentDidMount() {
 		this.processPromise('rates', this.state.amount, toArray, this.getRates(this.state.base, this.constants.currencyList.join(',')))
