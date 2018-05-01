@@ -10,56 +10,61 @@ const multiply = (amount, value) => {
 }
 
 const unixToDate = (unixTime) => {
-	return moment(unixTime).toDate();
+	return moment.unix(unixTime).toDate();
 }
 
-const formatArr = (arr) => {
 
+// Format array to usable Chart.js format.
+
+const formatArr = (arr) => {
 	const formatted = arr.map(item => {
 		return {
-			x: unixToDate(item[0]),
-			y: item[1]
+			x: unixToDate(item.time),
+			y: toNum(item.close)
 		}
 	})
-
 	return formatted;
 }
 
-const genStartTime = (timePeriod) => {
 
-	const time = {
-		'Day': 'days',
-		'Week': 'weeks',
-		'Month': 'months',
-		'Year': 'years'
+// Convert user time input to values used in API requests.
+
+const toDays = (timePeriod) => {
+	const obj = {
+		'Day': 12,
+		'Week': 7,
+		'Month': 31,
+		'Year': 365
 	}
-
-	return moment().subtract(1, time[timePeriod]).toDate();
+	return obj[timePeriod];
 }
 
+const toTimeUnit = (timePeriod) => {
+	return timePeriod === 'Days' ? 'histohour' : 'histoday';
+}
+
+
+// Process JSON object to formatted array/value.
+
+const toVal = (obj, amount) => {
+	for(let prop in obj) {
+		return multiply(amount, toNum(obj[prop]));
+	}
+};
+
 const toArray = (obj, amount) => {
-
 	const formatted = [];
-
 	for (let prop in obj) {
 		let num = toNum(obj[prop]);
 		let tmp = {
 			name: prop,
 			rate: multiply(amount, num)
 		}
-
 		formatted.push(tmp);
 	}
-
 	return formatted;
 }
 
-const toVal = (obj, amount) => {
 
-	for(let prop in obj) {
-		return multiply(amount, obj[prop]);
-	}
-};
-
-export { toArray, toVal, formatArr, genStartTime }
+export { toArray, toVal, formatArr, toDays, toTimeUnit, unixToDate }
 

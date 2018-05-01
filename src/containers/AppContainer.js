@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 
 import App from '../components/App'
-import { toArray, toVal, formatArr, genStartTime } from '../helpers/format'
+import { toArray, toVal, toDays, formatArr, toTimeUnit, unixToDate } from '../helpers/format'
 
 class AppContainer extends Component {
 
@@ -18,8 +18,8 @@ class AppContainer extends Component {
 			tBase: 'ETH',
 
 			timePeriod: 'Week',
-			startTime: genStartTime('Week'),
-			endTime: new Date(),
+			startTime: '',
+			endTime: '',
 			coinA: 'BTC',
 			coinB: 'ETH',
 			trendA: [],
@@ -35,15 +35,18 @@ class AppContainer extends Component {
 			name: 'Currency',
 			rate: 'Rate'
 		}],
-		coinList: ['ADA','BCH','BTC','ETH','EOS','IOTA','NEO','LTC','OMG','VTC','XLM','XMR','NANO','XRP'],
-		timeList: ['Day', 'Week', 'Month', 'Year']
+		currencyList: ['USD','JPY','EUR','AUD','CHF','NZD','CAD'],
+		coinList: ['ADA','BCH','BTC','ETH','EOS','IOTA','NEO','LTC','OMG','VTC','XLM','XMR','XRB','XRP'],
+		timeList: ['Day', 'Week', 'Month', 'Year'],
+		proxy: 'https://tranquil-harbor-38042.herokuapp.com/'
 	}
 
 	componentDidMount() {
-		this.getRates(this.state.base, null, this.state.amount, null);
-		this.getRates(this.state.fBase, this.state.tBase, null, this.state.tAmount);
-		this.getAll([this.getPriceTrend(this.state.coinA, this.state.timePeriod.toUpperCase()), 
-			this.getPriceTrend(this.state.coinB, this.state.timePeriod.toUpperCase())]);
+		this.processPromise('rates', this.state.amount, toArray, this.getRates(this.state.base, this.constants.currencyList.join(',')))
+		this.processPromise('tAmount', this.state.fAmount, toVal, this.getRates(this.state.fBase, this.state.tBase))
+
+		this.processPromises([this.getPrices(this.state.coinA, toDays(this.state.timePeriod), toTimeUnit(this.state.timePeriod)), 
+							  this.getPrices(this.state.coinB, toDays(this.state.timePeriod), toTimeUnit(this.state.timePeriod))])
 		
 	}
 
@@ -52,7 +55,7 @@ class AppContainer extends Component {
 		this.setState({
 			[e.target.name]: e.target.value
 		}, () => {
-			this.getRates(this.state.base, null, this.state.amount, null);
+			this.processPromise('rates', this.state.amount, toArray, this.getRates(this.state.base, this.constants.currencyList.join(',')))
 		})
 	}
 
@@ -61,7 +64,7 @@ class AppContainer extends Component {
 		this.setState({
 			[e.target.name]: e.target.value
 		}, () => {
-			this.getRates(this.state.fBase, this.state.tBase, null, this.state.tAmount);
+			this.processPromise('tAmount', this.state.fAmount, toVal, this.getRates(this.state.fBase, this.state.tBase))
 		})
 	}
 
@@ -69,13 +72,11 @@ class AppContainer extends Component {
 		e.preventDefault()
 
 		this.setState({
-			[e.target.name]: e.target.value,
-			startTime: genStartTime(e.target.value),
-			endTime: new Date()
+			[e.target.name]: e.target.value
 		}, () => {
 
-			this.getAll([this.getPriceTrend(this.state.coinA, this.state.timePeriod.toUpperCase()), 
-				this.getPriceTrend(this.state.coinB, this.state.timePeriod.toUpperCase())]);
+			this.processPromises([this.getPrices(this.state.coinA, toDays(this.state.timePeriod), toTimeUnit(this.state.timePeriod)), 
+								  this.getPrices(this.state.coinB, toDays(this.state.timePeriod), toTimeUnit(this.state.timePeriod))])
 
 		})
 	}
@@ -86,34 +87,21 @@ class AppContainer extends Component {
 			[e.target.name]: e.target.value
 		}, () => {
 
-			this.getAll([this.getPriceTrend(this.state.coinA, this.state.timePeriod.toUpperCase()), 
-				this.getPriceTrend(this.state.coinB, this.state.timePeriod.toUpperCase())]);
+			this.processPromises([this.getPrices(this.state.coinA, toDays(this.state.timePeriod), toTimeUnit(this.state.timePeriod)), 
+								  this.getPrices(this.state.coinB, toDays(this.state.timePeriod), toTimeUnit(this.state.timePeriod))])
+
 		})
 	}
 
-	getAll = (promiseArray) => {
-		this.setState({
-			isFetching: true
-		})
-
-		Promise.all(promiseArray)
+	processPromise = (target, amount, format, promise) => {
+		Promise.resolve(promise)
 		.then(res => {
-
-			console.log(`res: ${ res }`)
-
-			const trendAData = formatArr(res[0].price)
-			const trendBData = formatArr(res[1].price)
-
-			console.log(`trendA: ${ trendAData }`)
-			console.log(`trendB: ${ trendBData }`)
-
 			this.setState({
-				trendA: trendAData,
-				trendB: trendBData
+				isFetching: false,
+				[target]: format(res, amount)
 			})
 		})
 		.catch(e => {
-
 			this.setState({
 				isFetching: false,
 				error: e
@@ -121,60 +109,65 @@ class AppContainer extends Component {
 		})
 	}
 
-	getPriceTrend = (coinName, timePeriod) => {
+	processPromises = (promiseArr) => {
 
-		const proxy = 'https://cors-anywhere.herokuapp.com/'
+		Promise.all(promiseArr)
+			.then(arr => {
+				this.setState({
+					isFetching: false,
+					trendA: formatArr(arr[0].Data),
+					trendB: formatArr(arr[1].Data),
+
+					startTime: unixToDate(arr[0].TimeFrom),
+					endTime: unixToDate(arr[1].TimeTo)
+				})
+			})
+			.catch(e => {
+				this.setState({
+					isFetching: false,
+					error: e
+				})
+			})
+	}
+
+	getPrices = (coinName, timeNum, timeUnit) => {
+		this.setState({
+			isFetching: true
+		})
 
 		return new Promise((resolve, reject) => {
-			fetch(proxy + `https://www.cryptorollcall.com/crcserver/charts/histo/${ timePeriod }/${ coinName }`)
+			fetch(this.constants.proxy + `https://min-api.cryptocompare.com/data/${ timeUnit }?fsym=${ coinName }&tsym=USD&limit=${ timeNum }&aggregate=1`)
 			.then(res => {
-				console.log(res)
-				if(res)
+				if(res.ok)
 					resolve(res.json())
 				else
 					reject(res.statusText)
 			})
 			.catch(e => {
-				console.log(e);
 				reject(e)
 			})
 		})
 	}
 
-	getRates = (from, to, amount, fAmount) => {
-
-		if(!to) {
-			to = 'USD,JPY,EUR,AUD,CHF,NZD,CAD';
-		}
-
-		this.setState({isFetching: true})
-
-		fetch(`https://min-api.cryptocompare.com/data/price?fsym=${ from }&tsyms=${ to }`)
-		.then((res) => {
-			if(res.ok) 
-				return res.json()
-			throw new Error(`${ res.status }:${ res.statusText }`)
+	getRates = (from, to) => {
+		this.setState({
+			isFetching: true
 		})
-		.then(json => {
-			if(fAmount)
-				this.setState({
-					isFetching: false,
-					tAmount: toVal(json, fAmount)
-				})
-			else 
-				this.setState({
-					isFetching: false,
-					rates: toArray(json, amount)
-				})
-		})
-		.catch(e => {
-			this.setState({
-				isFetching: false,
-				error: e
+
+		return new Promise((resolve, reject) => {
+			fetch(this.constants.proxy + `https://min-api.cryptocompare.com/data/price?fsym=${ from }&tsyms=${ to }`)
+			.then(res => {
+				if(res.ok)
+					resolve(res.json())
+				else 
+					reject(res.statusText)
+			})
+			.catch(e => {
+				reject(e)
 			})
 		})
 	}
-	
+
 	render() {
 		return (
 			<App 
